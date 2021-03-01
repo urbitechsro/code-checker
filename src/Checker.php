@@ -59,7 +59,7 @@ class Checker
 					->exclude($this->ignore)
 					->from($path)
 					->exclude($this->ignore)
-					->getIterator()
+					->getIterator(),
 			);
 		}
 

@@ -178,7 +178,7 @@ class Tasks
 			$pipes,
 			null,
 			null,
-			['bypass_shell' => true]
+			['bypass_shell' => true],
 		);
 		if (!is_resource($process)) {
 			$result->warning('Unable to lint PHP code');
@@ -271,7 +271,7 @@ class Tasks
 		if (preg_match('#^(\t*+)\ (?!\*)\s*#m', $contents, $m, PREG_OFFSET_CAPTURE)) {
 			$result->error(
 				$m[1][0] ? 'Mixed tabs and spaces to indent' : 'Used space to indent instead of tab',
-				self::offsetToLine($origContents, $m[0][1])
+				self::offsetToLine($origContents, $m[0][1]),
 			);
 			$offset = $m[0][1] + strlen($m[0][0]) + 1;
 		}
