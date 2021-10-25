@@ -14,10 +14,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v5.6
       with:
         # Name of the Docker image
-        image: code-checker
-        # Tags override for Docker image
-        # Target Docker registry
-        registry: urbitech
+        image: urbitech/code-checker
         # Docker registry username
         username: ${{ secrets.DOCKER_USERNAME }}
         # Docker registry password
