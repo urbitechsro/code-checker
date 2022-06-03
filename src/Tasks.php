@@ -82,6 +82,7 @@ class Tasks
 			}
 			$out .= is_array($token) ? $token[1] : $token;
 		}
+
 		$contents = $out;
 	}
 
@@ -101,6 +102,7 @@ class Tasks
 				break;
 			}
 		}
+
 		if (!preg_match('#\bstrict_types\s*=\s*1\b#', $declarations)) {
 			$result->error('Missing declare(strict_types=1)');
 		}
@@ -130,8 +132,8 @@ class Tasks
 		foreach (@token_get_all($contents) as $token) { // @ can trigger error
 			if (($token[0] === T_ENCAPSED_AND_WHITESPACE && $prev[0] !== T_START_HEREDOC
 					|| $token[0] === T_CONSTANT_ENCAPSED_STRING)
-				&& strpos($token[1], "\n") !== false
-				&& (strpos($token[1], "\\'") !== false || strpos($token[1], '\\"') !== false)
+				&& str_contains($token[1], "\n")
+				&& (str_contains($token[1], "\\'") || str_contains($token[1], '\\"'))
 			) {
 				$result->warning('Tip: use NOWDOC or HEREDOC', $token[2]);
 			}
@@ -197,19 +199,20 @@ class Tasks
 	{
 		$latte = new Latte\Engine;
 		$latte->setLoader(new Latte\Loaders\StringLoader);
-		$latte->getCompiler()->addMacro('cache', new Nette\Bridges\CacheLatte\CacheMacro);
-		Nette\Bridges\ApplicationLatte\UIMacros::install($latte->getCompiler());
-		Nette\Bridges\FormsLatte\FormMacros::install($latte->getCompiler());
+		$latte->addExtension(new Latte\Essential\TranslatorExtension(null));
+		$latte->addExtension(new Nette\Bridges\ApplicationLatte\UIExtension(null));
+		$latte->addExtension(new Nette\Bridges\CacheLatte\CacheExtension(new Nette\Caching\Storages\DevNullStorage));
+		$latte->addExtension(new Nette\Bridges\FormsLatte\FormsExtension);
 
 		try {
 			$code = $latte->compile($contents);
 			static::phpSyntaxChecker($code, $result);
 
 		} catch (Latte\CompileException $e) {
-			if (!preg_match('#Unknown (tag|macro|attribute)#A', $e->getMessage())) {
-				$result->error($e->getMessage(), $e->sourceLine);
+			if (!preg_match('#Unexpected (tag|attribute)#A', $e->getMessage())) {
+				$result->error($e->getMessage(), $e->position?->line);
 			} else {
-				$result->warning($e->getMessage(), $e->sourceLine);
+				$result->warning($e->getMessage(), $e->position?->line);
 			}
 		}
 	}
@@ -264,7 +267,7 @@ class Tasks
 	}
 
 
-	public static function tabIndentationChecker(string $contents, Result $result, string $origContents = null): void
+	public static function tabIndentationChecker(string $contents, Result $result, ?string $origContents = null): void
 	{
 		$origContents = $origContents ?: $contents;
 		$offset = 0;
@@ -293,6 +296,7 @@ class Tasks
 			}
 			$s .= is_array($token) ? $token[1] : $token;
 		}
+
 		self::tabIndentationChecker($s, $result, $contents);
 	}
 

@@ -47,7 +47,7 @@ set_time_limit(0);
 
 
 echo '
-CodeChecker version 3.2
+CodeChecker version 3.3
 -----------------------
 ';
 
@@ -81,6 +81,7 @@ $tasks = Tasks::class;
 foreach ($options['--ignore'] as $ignore) {
 	$checker->ignore[] = $ignore;
 }
+
 $checker->readOnly = !isset($options['--fix']);
 $checker->showProgress = !isset($options['--no-progress']);
 
