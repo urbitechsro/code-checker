@@ -80,7 +80,7 @@ class Checker
 	}
 
 
-	public function addTask(callable $task, string $pattern = null): void
+	public function addTask(callable $task, ?string $pattern = null): void
 	{
 		$this->tasks[] = [$task, $pattern];
 	}
@@ -136,6 +136,7 @@ class Checker
 				return !$neg;
 			}
 		}
+
 		return $neg;
 	}
 
