@@ -42,7 +42,6 @@ class Tasks
 		foreach (@token_get_all($contents) as $token) { // @ can trigger error
 			if ($token[0] === T_COMMENT && Strings::match($token[1], '#/\*(?!\*).*(?<!\w)@[a-z]#isA')) {
 				$result->warning('Missing /** in phpDoc comment', $token[2]);
-
 			} elseif ($token[0] === T_COMMENT && Strings::match($token[1], '#/\*\*(?!\s).*(?<!\w)@[a-z]#isA')) {
 				$result->warning('Missing space after /** in phpDoc comment', $token[2]);
 			}
@@ -64,10 +63,8 @@ class Tasks
 			$token = $tokens[$i];
 			if ($token === '(') {
 				$brackets[] = false;
-
 			} elseif ($token === ')') {
 				$token = array_pop($brackets) ? ']' : ')';
-
 			} elseif (is_array($token) && $token[0] === T_ARRAY) {
 				$a = $i + 1;
 				if (isset($tokens[$a]) && $tokens[$a][0] === T_WHITESPACE) {
@@ -207,7 +204,29 @@ class Tasks
 		try {
 			$code = $latte->compile($contents);
 			static::phpSyntaxChecker($code, $result);
+		} catch (Latte\CompileException $e) {
+			if (!preg_match('#Unexpected (tag|attribute)#A', $e->getMessage())) {
+				$result->error($e->getMessage(), $e->position?->line);
+			} else {
+				$result->warning($e->getMessage(), $e->position?->line);
+			}
+		}
+	}
 
+
+	public static function latteWithPhpSyntaxChecker(string $contents, Result $result): void
+	{
+		$latte = new Latte\Engine;
+		$latte->setLoader(new Latte\Loaders\StringLoader);
+		$latte->addExtension(new Latte\Essential\RawPhpExtension);
+		$latte->addExtension(new Latte\Essential\TranslatorExtension(null));
+		$latte->addExtension(new Nette\Bridges\ApplicationLatte\UIExtension(null));
+		$latte->addExtension(new Nette\Bridges\CacheLatte\CacheExtension(new Nette\Caching\Storages\DevNullStorage));
+		$latte->addExtension(new Nette\Bridges\FormsLatte\FormsExtension);
+
+		try {
+			$code = $latte->compile($contents);
+			static::phpSyntaxChecker($code, $result);
 		} catch (Latte\CompileException $e) {
 			if (!preg_match('#Unexpected (tag|attribute)#A', $e->getMessage())) {
 				$result->error($e->getMessage(), $e->position?->line);

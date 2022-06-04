@@ -61,6 +61,7 @@ $cmd = new Parser(<<<'XX'
 	    -f | --fix            Fixes files
 	    -l | --eol            Convert newline characters
 	    --no-progress         Do not show progress dots
+		--latte-with-php      Use PHP extension in latte
 	    --strict-types        Checks whether PHP 7.0 directive strict_types is enabled
 
 
@@ -100,7 +101,11 @@ if (isset($options['--eol'])) {
 
 $checker->addTask([$tasks, 'invalidDoubleQuotedStringChecker'], '*.php,*.phpt');
 $checker->addTask([$tasks, 'trailingPhpTagRemover'], '*.php,*.phpt');
-$checker->addTask([$tasks, 'latteSyntaxChecker'], '*.latte');
+if (isset($options['--latte-with-php'])) {
+	$checker->addTask([$tasks, 'latteWithPhpSyntaxChecker'], '*.latte');
+} else {
+	$checker->addTask([$tasks, 'latteSyntaxChecker'], '*.latte');
+}
 $checker->addTask([$tasks, 'neonSyntaxChecker'], '*.neon');
 $checker->addTask([$tasks, 'jsonSyntaxChecker'], '*.json');
 $checker->addTask([$tasks, 'yamlIndentationChecker'], '*.yml');
